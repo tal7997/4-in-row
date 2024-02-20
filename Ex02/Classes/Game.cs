@@ -197,7 +197,53 @@ namespace Ex02.Classes
 
         private int findBestColumn()
         {
+            int best;
             // Iterate through each column and find the first one that allows a winning move
+           /* for (int col = 0; col < Cols; col++)
+            {
+                if (IsValidPlay(col))
+                {
+                    // Simulate placing a token in the current column
+                    m_Cells[m_Counts[col], col] = m_CurrentPlayer;
+
+                    // Check if this move leads to a win
+                    if (isWinningMove())
+                    {
+                        // Undo the simulated move
+                        this[m_Counts[col], col] = Cells.Empty;
+                        return col + 1; // Columns are 1-indexed
+                    }
+
+                    // Undo the simulated move
+                    m_Cells[m_Counts[col], col] = Cells.Empty;
+                }
+            }*/
+            best = scanBoardToWinOrBlock();
+            if (best != 0)
+            {
+                return best;
+            }
+            else
+            {
+                ChangePlayerTurn();
+                best = scanBoardToWinOrBlock();
+                if(best != 0) 
+                {
+                    ChangePlayerTurn();
+                    return best; 
+                }
+                ChangePlayerTurn();
+
+            }
+
+            // If no winning move is found, choose a random available column
+            List<int> availableColumns = Enumerable.Range(1, Cols).Where(col => IsValidPlay(col - 1)).ToList();
+            Random rnd = new Random();
+            return availableColumns[rnd.Next(availableColumns.Count)];
+        }
+
+        private int scanBoardToWinOrBlock()
+        {
             for (int col = 0; col < Cols; col++)
             {
                 if (IsValidPlay(col))
@@ -217,11 +263,7 @@ namespace Ex02.Classes
                     m_Cells[m_Counts[col], col] = Cells.Empty;
                 }
             }
-
-            // If no winning move is found, choose a random available column
-            List<int> availableColumns = Enumerable.Range(1, Cols).Where(col => IsValidPlay(col - 1)).ToList();
-            Random rnd = new Random();
-            return availableColumns[rnd.Next(availableColumns.Count)];
+            return 0;
         }
 
         private bool isWinningMove()
