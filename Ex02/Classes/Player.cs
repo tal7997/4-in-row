@@ -1,7 +1,4 @@
-﻿using System;
-using System.Text;
-
-namespace Ex02.Classes
+﻿namespace Ex02.Classes
 {
     public class Player
     {
@@ -34,6 +31,4 @@ namespace Ex02.Classes
             NumOfWins++;
         }
     }
-
-
 }
