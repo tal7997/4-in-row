@@ -132,6 +132,49 @@ namespace Ex02.Classes
             return true;
         }
 
+        private bool thereIs2InLineAndPotentialTofillMore(int i_Row, int i_Col, int I_Diraction, out int expcetedValRow, out int expcetedValCol)
+        {
+            int[] diractionRow = { 0, 1, 1, 1 };
+            int[] diractionCol = { 1, 1, 0, -1 };
+
+            int backR = i_Row - diractionRow[I_Diraction],
+                backC = i_Col - diractionCol[I_Diraction],
+                nextR = i_Row + diractionRow[I_Diraction],
+                nextC = i_Col + diractionCol[I_Diraction],
+                nextNextR = nextR + diractionRow[I_Diraction],
+                nextNextC = nextC + diractionCol[I_Diraction];
+
+
+            bool backCell = isInBoardLimits(backR, backC) && this[backR, backC] == Cells.Empty;// && m_Counts[backC] == backR;
+            bool forwardCell = isInBoardLimits(nextR, nextC) && this[nextR, nextC] == this[i_Row, i_Col];// && m_Counts[nextC] == i_Row + diractionRow[I_Diraction];
+
+            //if ((!isInBoardLimits(nextR, nextC) || this[nextR, nextC] != this[i_Row, i_Col]) && !isInBoardLimits(backR, backC) || this[backR, backC] != this[i_Row, i_Col])
+            if (!(backCell && forwardCell))
+            {
+                expcetedValRow = -1;
+                expcetedValCol = -1;
+                return false;
+            }
+            bool positionThreeInRow = isInBoardLimits(nextNextR, nextNextC) && this[nextNextR, nextNextC] == Cells.Empty;
+
+            if (positionThreeInRow && m_Counts[nextNextC] == nextNextR)
+            {
+                expcetedValRow = nextNextR;
+                expcetedValCol = nextNextC;
+                return true;
+            }
+            else if (backCell && m_Counts[backC] == backR)
+            {
+                expcetedValRow = backR;
+                expcetedValCol = backC;
+                return true;
+            }
+           
+            expcetedValRow = -1;
+            expcetedValCol = -1;
+            return false;
+        }
+
         private void checkWinCondition()
         {
             for (int i = 0; i < Rows; i++)
@@ -197,27 +240,8 @@ namespace Ex02.Classes
 
         private int findBestColumn()
         {
-            int best;
+            int best, expcetedValRow, expcetedValCol;
             // Iterate through each column and find the first one that allows a winning move
-           /* for (int col = 0; col < Cols; col++)
-            {
-                if (IsValidPlay(col))
-                {
-                    // Simulate placing a token in the current column
-                    m_Cells[m_Counts[col], col] = m_CurrentPlayer;
-
-                    // Check if this move leads to a win
-                    if (isWinningMove())
-                    {
-                        // Undo the simulated move
-                        this[m_Counts[col], col] = Cells.Empty;
-                        return col + 1; // Columns are 1-indexed
-                    }
-
-                    // Undo the simulated move
-                    m_Cells[m_Counts[col], col] = Cells.Empty;
-                }
-            }*/
             best = scanBoardToWinOrBlock();
             if (best != 0)
             {
@@ -233,8 +257,12 @@ namespace Ex02.Classes
                     return best; 
                 }
                 ChangePlayerTurn();
-
             }
+            if (isBlockMove(out expcetedValRow,out expcetedValCol))
+            {
+                return expcetedValCol+1;
+            }
+
 
             // If no winning move is found, choose a random available column
             List<int> availableColumns = Enumerable.Range(1, Cols).Where(col => IsValidPlay(col - 1)).ToList();
@@ -285,7 +313,30 @@ namespace Ex02.Classes
                     }
                 }
             }
+            return false;
+        }
 
+        private bool isBlockMove(out int expcetedValRow, out int expcetedValCol)
+        {
+            // Check for a win in all directions
+            for (int i = 0; i < Rows; i++)
+            {
+                for (int j = 0; j < Cols; j++)
+                {
+                    if (this[i, j] != Cells.Empty)
+                    {
+                        for (int d = 0; d < 4; d++)
+                        {
+                            if (thereIs2InLineAndPotentialTofillMore(i, j, d,out expcetedValRow,out expcetedValCol) )
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            expcetedValRow = -1;
+            expcetedValCol = -1;
             return false;
         }
 

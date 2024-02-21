@@ -134,7 +134,7 @@ namespace Ex02
 
         public static void printMatrixConsole(Game io_Game)
         {
-            StringBuilder numberOfColToPrint = new StringBuilder("  ");
+            StringBuilder numberOfColToPrint = ne StringBuilder("  ");
             StringBuilder speaceToPrint = new StringBuilder("=");
             for (int i = 1; i <= io_Game.Cols; i++)
             {
