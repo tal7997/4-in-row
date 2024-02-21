@@ -416,5 +416,9 @@ namespace Ex02
                 Console.WriteLine("The game ended by draw!");
             }
         }
+
     }
 }
+
+//s sdjlksdkjflksjd ksj dlfkjskfj lsd
+// sdjfksjdkfsd sjdhf jskjdf ks
