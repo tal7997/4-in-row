@@ -10,7 +10,7 @@ namespace Ex02.Classes
         Player m_Player2;
         Cells[,] m_Cells;
         Cells m_CurrentPlayer;
-        int[] m_Counts;
+        int[] m_ColumnFullnessCounterArray;
         int m_KInARow;
         int KInARow { get { return m_KInARow; } set { m_KInARow = value; } }
         bool m_ModePcGame;
@@ -24,7 +24,7 @@ namespace Ex02.Classes
         {
             m_Cells = new Cells[rows, cols];
             m_CurrentPlayer = Cells.Red;
-            m_Counts = new int[cols];
+            m_ColumnFullnessCounterArray = new int[cols];
             m_KInARow = K;
             m_ModePcGame = modePcGame;
             m_Player1 = new Player(Cells.Red);
@@ -44,7 +44,7 @@ namespace Ex02.Classes
 
             for (int i = 0; i < Cols; i++)
             {
-                m_Counts[i] = Rows - 1;
+                m_ColumnFullnessCounterArray[i] = Rows - 1;
             }
 
             m_CurrentPlayer = Cells.Red;
@@ -69,10 +69,7 @@ namespace Ex02.Classes
 
         public int Rows
         {
-            get
-            {
-                return m_Cells.GetLength(0);
-            }
+            get { return m_Cells.GetLength(0); }
         }
 
         public int Cols
@@ -80,7 +77,8 @@ namespace Ex02.Classes
             get { return m_Cells.GetLength(1); }
         }
 
-        public Cells CurrentPlayer {
+        public Cells CurrentPlayer 
+        {
             get { return m_CurrentPlayer; }
             set { m_CurrentPlayer = value; }
         }
@@ -88,8 +86,9 @@ namespace Ex02.Classes
         public bool PlayerMode { get { return !m_ModePcGame; } }
 
         public bool IsGameOver
-        { get { return m_GameOver; }
-          set { m_GameOver = value; }
+        { 
+            get { return m_GameOver; }
+            set { m_GameOver = value; }
         }
 
         public void ChangePlayerTurn()
@@ -104,7 +103,7 @@ namespace Ex02.Classes
 
         public bool IsValidPlay(int i_ColIndex)
         {
-            return !IsGameOver && m_Counts[i_ColIndex] >= 0;
+            return !IsGameOver && m_ColumnFullnessCounterArray[i_ColIndex] >= 0;
         }
 
         private bool isInBoardLimits(int i_NextRow, int i_NextCol)
@@ -121,6 +120,7 @@ namespace Ex02.Classes
             {
                 int nextR = i_Row + diractionRow[I_Diraction] * k;
                 int nextC = i_Col + diractionCol[I_Diraction] * k;
+
                 if (!isInBoardLimits(nextR, nextC) || this[nextR, nextC] != this[i_Row, i_Col])
                 {
                     return false;
@@ -130,42 +130,37 @@ namespace Ex02.Classes
             return true;
         }
 
-        private bool thereIs2InLineAndPotentialTofillMore(int i_Row, int i_Col, int I_Diraction, out int expcetedValRow, out int expcetedValCol)
+        private bool thereIs2InLineAndPotentialTofillMore(int i_Row, int i_Col, int I_Diraction, out int expcetedValCol)
         {
             int[] diractionRow = { 0, 1, 1, 1 };
             int[] diractionCol = { 1, 1, 0, -1 };
-            int backR = i_Row - diractionRow[I_Diraction],
-                backC = i_Col - diractionCol[I_Diraction],
-                nextR = i_Row + diractionRow[I_Diraction],
-                nextC = i_Col + diractionCol[I_Diraction],
-                nextNextR = nextR + diractionRow[I_Diraction],
-                nextNextC = nextC + diractionCol[I_Diraction];
-            bool backCell = isInBoardLimits(backR, backC) && this[backR, backC] == Cells.Empty;// && m_Counts[backC] == backR;
-            bool forwardCell = isInBoardLimits(nextR, nextC) && this[nextR, nextC] == this[i_Row, i_Col];// && m_Counts[nextC] == i_Row + diractionRow[I_Diraction];
+            int backRow = i_Row - diractionRow[I_Diraction],
+                backColumn = i_Col - diractionCol[I_Diraction],
+                nextRow = i_Row + diractionRow[I_Diraction],
+                nextColumn = i_Col + diractionCol[I_Diraction],
+                nextNextRow = nextRow + diractionRow[I_Diraction],
+                nextNextColumn = nextColumn + diractionCol[I_Diraction];
+            bool backCell = isInBoardLimits(backRow, backColumn) && this[backRow, backColumn] == Cells.Empty;
+            bool forwardCell = isInBoardLimits(nextRow, nextColumn) && this[nextRow, nextColumn] == this[i_Row, i_Col];
+            bool positionThreeInRow = isInBoardLimits(nextNextRow, nextNextColumn) && this[nextNextRow, nextNextColumn] == Cells.Empty;
 
-            //if ((!isInBoardLimits(nextR, nextC) || this[nextR, nextC] != this[i_Row, i_Col]) && !isInBoardLimits(backR, backC) || this[backR, backC] != this[i_Row, i_Col])
             if (!(backCell && forwardCell))
             {
-                expcetedValRow = -1;
                 expcetedValCol = -1;
                 return false;
             }
-            bool positionThreeInRow = isInBoardLimits(nextNextR, nextNextC) && this[nextNextR, nextNextC] == Cells.Empty;
 
-            if (positionThreeInRow && m_Counts[nextNextC] == nextNextR)
+            if (positionThreeInRow && m_ColumnFullnessCounterArray[nextNextColumn] == nextNextRow)
             {
-                expcetedValRow = nextNextR;
-                expcetedValCol = nextNextC;
+                expcetedValCol = nextNextColumn;
                 return true;
             }
-            else if (backCell && m_Counts[backC] == backR)
+            else if (backCell && m_ColumnFullnessCounterArray[backColumn] == backRow)
             {
-                expcetedValRow = backR;
-                expcetedValCol = backC;
+                expcetedValCol = backColumn;
                 return true;
             }
            
-            expcetedValRow = -1;
             expcetedValCol = -1;
             return false;
         }
@@ -190,13 +185,12 @@ namespace Ex02.Classes
                 }
             }
 
-            if (m_Counts.All(c => c == -1))
+            if (m_ColumnFullnessCounterArray.All(c => c == -1))
             {
                 if (!m_GameOver)
                 {
                     m_GameOver = true;
                     m_CurrentPlayer = Cells.Empty;
-                    
                 }
             }
         }
@@ -209,55 +203,55 @@ namespace Ex02.Classes
                 return false;
             }
 
-            this[m_Counts[i_NumOfCol], i_NumOfCol] = CurrentPlayer;
-            m_Counts[i_NumOfCol]--;
-
+            this[m_ColumnFullnessCounterArray[i_NumOfCol], i_NumOfCol] = CurrentPlayer;
+            m_ColumnFullnessCounterArray[i_NumOfCol]--;
             checkWinCondition();
-
             if (!IsGameOver)
             {
                 ChangePlayerTurn();
             }
+
             return true;
         }
 
         public int[] CurrentPlayersScore()
         {
-            int[] gameScore = new int[2] { Player1.NumOfWins, Player2.NumOfWins };
-            return gameScore;
+            return new int[2] { Player1.NumOfWins, Player2.NumOfWins };
         }
 
         public void PlaySmartPC()
         {
             int bestColumn = findBestColumn();
+
             TokenInsertion(bestColumn);
         }
 
         private int findBestColumn()
         {
-            int best, expcetedValRow, expcetedValCol;
+            int bestAvailableColumn;
+
             // Iterate through each column and find the first one that allows a winning move
-            best = scanBoardToWinOrBlock();
-            if (best != 0)
+            bestAvailableColumn = scanBoardToWinOrBlock();
+            if (bestAvailableColumn != 0)
             {
-                return best;
+                return bestAvailableColumn;
             }
             else
             {
                 ChangePlayerTurn();
-                best = scanBoardToWinOrBlock();
-                if(best != 0) 
+                bestAvailableColumn = scanBoardToWinOrBlock();
+                if(bestAvailableColumn != 0) 
                 {
                     ChangePlayerTurn();
-                    return best; 
+                    return bestAvailableColumn; 
                 }
 
                 ChangePlayerTurn();
             }
 
-            if (isBlockMove(out expcetedValRow,out expcetedValCol))
+            if (isBlockMove(out bestAvailableColumn))
             {
-                return expcetedValCol+1;
+                return bestAvailableColumn + 1;
             }
 
             // If no winning or blocking move is found, choose a random available column
@@ -272,14 +266,14 @@ namespace Ex02.Classes
             {
                 if (IsValidPlay(col))
                 {
-                    m_Cells[m_Counts[col], col] = m_CurrentPlayer; // Simulate placing a token in the current column
+                    m_Cells[m_ColumnFullnessCounterArray[col], col] = m_CurrentPlayer; // Simulate placing a token in the current column
                     if (isWinningMove()) // Check if this move leads to a win
                     {
-                        this[m_Counts[col], col] = Cells.Empty; // Undo the simulated move
+                        this[m_ColumnFullnessCounterArray[col], col] = Cells.Empty; // Undo the simulated move
                         return col + 1; // Columns are 1-indexed
                     }
 
-                    m_Cells[m_Counts[col], col] = Cells.Empty; // Undo the simulated move
+                    m_Cells[m_ColumnFullnessCounterArray[col], col] = Cells.Empty; // Undo the simulated move
                 }
             }
 
@@ -308,7 +302,7 @@ namespace Ex02.Classes
             return false;
         }
 
-        private bool isBlockMove(out int expcetedValRow, out int expcetedValCol)
+        private bool isBlockMove(out int expcetedValCol)
         {
             for (int i = 0; i < Rows; i++)
             {
@@ -318,7 +312,7 @@ namespace Ex02.Classes
                     {
                         for (int d = 0; d < 4; d++) // Check for a win in all directions
                         {
-                            if (thereIs2InLineAndPotentialTofillMore(i, j, d,out expcetedValRow,out expcetedValCol) )
+                            if (thereIs2InLineAndPotentialTofillMore(i, j, d, out expcetedValCol) )
                             {
                                 return true;
                             }
@@ -327,7 +321,6 @@ namespace Ex02.Classes
                 }
             }
 
-            expcetedValRow = -1;
             expcetedValCol = -1;
             return false;
         }
@@ -337,6 +330,7 @@ namespace Ex02.Classes
             initializeGameBoard();
         }   
     }
+
     public enum Cells
     {
         Empty = ' ',

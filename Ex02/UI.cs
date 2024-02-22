@@ -38,6 +38,7 @@ namespace Ex02
 
             Console.ReadLine();
         }
+
         public static bool ReplayUI(Game io_Game)
         {
             string result;
@@ -79,7 +80,6 @@ namespace Ex02
                 // Try parsing the string to an integer
                 if (int.TryParse(userInput, out userNumber) && userNumber > 3 && userNumber < 9)
                 {
-                    Console.WriteLine($"You entered: {userNumber}");
                     break; // Exit the loop if a valid positive integer between 4 to 8 is entered
                 }
                 else
@@ -128,7 +128,7 @@ namespace Ex02
             return game;
         }
 
-        public static void printMatrixConsole(Game io_Game)
+        public static void PrintMatrixConsole(Game io_Game)
         {
             StringBuilder numberOfColToPrint = new StringBuilder("  ");
             StringBuilder speaceToPrint = new StringBuilder("=");
@@ -186,7 +186,7 @@ namespace Ex02
 
             while (!io_Game.IsGameOver)
             {
-                printMatrixConsole(io_Game);
+                PrintMatrixConsole(io_Game);
                 validInput = false;
                 while (!validInput)
                 {
@@ -245,7 +245,7 @@ namespace Ex02
             string userInput;
             while (!io_Game.IsGameOver)
             {
-                printMatrixConsole(io_Game);
+                PrintMatrixConsole(io_Game);
                 validInput = false;
                 while (!validInput)
                 {
@@ -311,7 +311,7 @@ namespace Ex02
 
             while (!io_Game.IsGameOver)
             {
-                printMatrixConsole(io_Game);
+                PrintMatrixConsole(io_Game);
                 validInput = false;
                 while (!validInput)
                 {
@@ -378,7 +378,7 @@ namespace Ex02
         public static void PrintGameIsfinished(Game io_Game)
         {
             Screen.Clear();
-            printMatrixConsole(io_Game);
+            PrintMatrixConsole(io_Game);
             if (io_Game.CurrentPlayer != Cells.Empty)
             {
                 Console.WriteLine($"Well done!! {io_Game.CurrentPlayer} has won!");
