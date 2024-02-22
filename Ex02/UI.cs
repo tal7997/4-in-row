@@ -42,6 +42,7 @@ namespace Ex02
         public static bool ReplayUI(Game io_Game)
         {
             string result;
+            bool v_FlagResult = true;
 
             Console.WriteLine("Do you want to play again? Enter Yes or No:");
             result = Console.ReadLine();
@@ -55,10 +56,10 @@ namespace Ex02
             {
                 io_Game.Replay();
                 Screen.Clear();
-                return true;
+                return v_FlagResult;
             }
 
-            return false;
+            return !v_FlagResult;
         }
 
         public static void ShowStat(Game io_Game)

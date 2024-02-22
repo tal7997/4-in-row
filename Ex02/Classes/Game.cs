@@ -115,6 +115,7 @@ namespace Ex02.Classes
         {
             int[] diractionRow = { 0, 1, 1, 1 };
             int[] diractionCol = { 1, 1, 0, -1 };
+            bool v_FlagResult = true;
 
             for (int k = 1; k < KInARow; k++)
             {
@@ -123,11 +124,11 @@ namespace Ex02.Classes
 
                 if (!isInBoardLimits(nextR, nextC) || this[nextR, nextC] != this[i_Row, i_Col])
                 {
-                    return false;
+                    return !v_FlagResult;
                 }
             }
 
-            return true;
+            return v_FlagResult;
         }
 
         private bool thereIs2InLineAndPotentialTofillMore(int i_Row, int i_Col, int I_Diraction, out int expcetedValCol)
@@ -143,6 +144,7 @@ namespace Ex02.Classes
             bool backCell = isInBoardLimits(backRow, backColumn) && this[backRow, backColumn] == Cells.Empty;
             bool forwardCell = isInBoardLimits(nextRow, nextColumn) && this[nextRow, nextColumn] == this[i_Row, i_Col];
             bool positionThreeInRow = isInBoardLimits(nextNextRow, nextNextColumn) && this[nextNextRow, nextNextColumn] == Cells.Empty;
+            bool v_FlagResult = true;
 
             if (!(backCell && forwardCell))
             {
@@ -153,16 +155,16 @@ namespace Ex02.Classes
             if (positionThreeInRow && m_ColumnFullnessCounterArray[nextNextColumn] == nextNextRow)
             {
                 expcetedValCol = nextNextColumn;
-                return true;
+                return v_FlagResult;
             }
             else if (backCell && m_ColumnFullnessCounterArray[backColumn] == backRow)
             {
                 expcetedValCol = backColumn;
-                return true;
+                return v_FlagResult;
             }
            
             expcetedValCol = -1;
-            return false;
+            return !v_FlagResult;
         }
 
         private void checkWinCondition()
@@ -282,6 +284,8 @@ namespace Ex02.Classes
 
         private bool isWinningMove()
         {
+            bool v_FlagResult = true;
+
             for (int i = 0; i < Rows; i++) 
             {
                 for (int j = 0; j < Cols; j++)
@@ -292,18 +296,20 @@ namespace Ex02.Classes
                         {
                             if (thereIsKInLine(i, j, d))
                             {
-                                return true;
+                                return v_FlagResult;
                             }
                         }
                     }
                 }
             }
 
-            return false;
+            return !v_FlagResult;
         }
 
         private bool isBlockMove(out int expcetedValCol)
         {
+            bool v_FlagResult = true;
+
             for (int i = 0; i < Rows; i++)
             {
                 for (int j = 0; j < Cols; j++)
@@ -314,7 +320,7 @@ namespace Ex02.Classes
                         {
                             if (thereIs2InLineAndPotentialTofillMore(i, j, d, out expcetedValCol) )
                             {
-                                return true;
+                                return v_FlagResult;
                             }
                         }
                     }
@@ -322,7 +328,7 @@ namespace Ex02.Classes
             }
 
             expcetedValCol = -1;
-            return false;
+            return !v_FlagResult;
         }
 
         public void Replay()
