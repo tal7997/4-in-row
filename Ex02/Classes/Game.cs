@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 
-
 namespace Ex02.Classes
 {
     public class Game
@@ -13,10 +12,9 @@ namespace Ex02.Classes
         Cells m_CurrentPlayer;
         int[] m_Counts;
         int m_KInARow;
-        public int KInARow { get { return m_KInARow; } private set { m_KInARow = value; } }
+        int KInARow { get { return m_KInARow; } set { m_KInARow = value; } }
         bool m_ModePcGame;
         bool m_GameOver = false;
-
 
         public Game() : this(8, 8, 4, false)
         {
@@ -136,15 +134,12 @@ namespace Ex02.Classes
         {
             int[] diractionRow = { 0, 1, 1, 1 };
             int[] diractionCol = { 1, 1, 0, -1 };
-
             int backR = i_Row - diractionRow[I_Diraction],
                 backC = i_Col - diractionCol[I_Diraction],
                 nextR = i_Row + diractionRow[I_Diraction],
                 nextC = i_Col + diractionCol[I_Diraction],
                 nextNextR = nextR + diractionRow[I_Diraction],
                 nextNextC = nextC + diractionCol[I_Diraction];
-
-
             bool backCell = isInBoardLimits(backR, backC) && this[backR, backC] == Cells.Empty;// && m_Counts[backC] == backR;
             bool forwardCell = isInBoardLimits(nextR, nextC) && this[nextR, nextC] == this[i_Row, i_Col];// && m_Counts[nextC] == i_Row + diractionRow[I_Diraction];
 
@@ -256,15 +251,16 @@ namespace Ex02.Classes
                     ChangePlayerTurn();
                     return best; 
                 }
+
                 ChangePlayerTurn();
             }
+
             if (isBlockMove(out expcetedValRow,out expcetedValCol))
             {
                 return expcetedValCol+1;
             }
 
-
-            // If no winning move is found, choose a random available column
+            // If no winning or blocking move is found, choose a random available column
             List<int> availableColumns = Enumerable.Range(1, Cols).Where(col => IsValidPlay(col - 1)).ToList();
             Random rnd = new Random();
             return availableColumns[rnd.Next(availableColumns.Count)];
@@ -276,34 +272,29 @@ namespace Ex02.Classes
             {
                 if (IsValidPlay(col))
                 {
-                    // Simulate placing a token in the current column
-                    m_Cells[m_Counts[col], col] = m_CurrentPlayer;
-
-                    // Check if this move leads to a win
-                    if (isWinningMove())
+                    m_Cells[m_Counts[col], col] = m_CurrentPlayer; // Simulate placing a token in the current column
+                    if (isWinningMove()) // Check if this move leads to a win
                     {
-                        // Undo the simulated move
-                        this[m_Counts[col], col] = Cells.Empty;
+                        this[m_Counts[col], col] = Cells.Empty; // Undo the simulated move
                         return col + 1; // Columns are 1-indexed
                     }
 
-                    // Undo the simulated move
-                    m_Cells[m_Counts[col], col] = Cells.Empty;
+                    m_Cells[m_Counts[col], col] = Cells.Empty; // Undo the simulated move
                 }
             }
+
             return 0;
         }
 
         private bool isWinningMove()
         {
-            // Check for a win in all directions
-            for (int i = 0; i < Rows; i++)
+            for (int i = 0; i < Rows; i++) 
             {
                 for (int j = 0; j < Cols; j++)
                 {
                     if (this[i, j] != Cells.Empty)
                     {
-                        for (int d = 0; d < 4; d++)
+                        for (int d = 0; d < 4; d++) // Check for a win in all directions
                         {
                             if (thereIsKInLine(i, j, d))
                             {
@@ -313,19 +304,19 @@ namespace Ex02.Classes
                     }
                 }
             }
+
             return false;
         }
 
         private bool isBlockMove(out int expcetedValRow, out int expcetedValCol)
         {
-            // Check for a win in all directions
             for (int i = 0; i < Rows; i++)
             {
                 for (int j = 0; j < Cols; j++)
                 {
                     if (this[i, j] != Cells.Empty)
                     {
-                        for (int d = 0; d < 4; d++)
+                        for (int d = 0; d < 4; d++) // Check for a win in all directions
                         {
                             if (thereIs2InLineAndPotentialTofillMore(i, j, d,out expcetedValRow,out expcetedValCol) )
                             {
@@ -335,6 +326,7 @@ namespace Ex02.Classes
                     }
                 }
             }
+
             expcetedValRow = -1;
             expcetedValCol = -1;
             return false;
@@ -343,8 +335,7 @@ namespace Ex02.Classes
         public void Replay()
         {          
             initializeGameBoard();
-        }
-        
+        }   
     }
     public enum Cells
     {
