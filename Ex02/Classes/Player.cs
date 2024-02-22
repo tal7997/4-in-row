@@ -3,18 +3,18 @@
     public class Player
     {
         int m_NumOfWins;
-        Cells m_Color  { get; set; }
+        eCells m_Color  { get; set; }
 
         public Player()
         {
             m_NumOfWins = 0;
-            m_Color = Cells.Red;
+            m_Color = eCells.Red;
         }
 
-        public Player(Cells i_colorPlayer)
+        public Player(eCells i_colorPlayer)
         {
             m_NumOfWins = 0;
-            if (i_colorPlayer != Cells.Empty)
+            if (i_colorPlayer != eCells.Empty)
             {
                 m_Color = i_colorPlayer;
             }

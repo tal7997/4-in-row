@@ -155,13 +155,13 @@ namespace Ex02
             }
         }
 
-        public static void PrintInColor(Cells color)
+        public static void PrintInColor(eCells color)
         {
             ConsoleColor lastColor = Console.ForegroundColor;
 
-            if (color != Cells.Empty)
+            if (color != eCells.Empty)
             {
-                if (color == Cells.Red)
+                if (color == eCells.Red)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                 }
@@ -255,7 +255,7 @@ namespace Ex02
                     if (userInput.ToUpper() == "Q")
                     {
                         io_Game.IsGameOver = true;
-                        io_Game.CurrentPlayer = io_Game.CurrentPlayer == Cells.Red ? Cells.Yellow : Cells.Red;
+                        io_Game.CurrentPlayer = io_Game.CurrentPlayer == eCells.Red ? eCells.Yellow : eCells.Red;
                         break;
                     }
 
@@ -321,7 +321,7 @@ namespace Ex02
                     if (userInput.ToUpper() == "Q")
                     {
                         io_Game.IsGameOver = true;
-                        io_Game.CurrentPlayer = io_Game.CurrentPlayer == Cells.Red ? Cells.Yellow : Cells.Red;
+                        io_Game.CurrentPlayer = io_Game.CurrentPlayer == eCells.Red ? eCells.Yellow : eCells.Red;
                         break;
                     }
 
@@ -366,11 +366,11 @@ namespace Ex02
 
         public static void IncreaseNumOfWins(Game io_Game)
         {
-            if (io_Game.CurrentPlayer == Cells.Red)
+            if (io_Game.CurrentPlayer == eCells.Red)
             {
                 io_Game.Player1.IncreaseWinsPlayer();
             }
-            else if (io_Game.CurrentPlayer == Cells.Yellow)
+            else if (io_Game.CurrentPlayer == eCells.Yellow)
             {
                 io_Game.Player2.IncreaseWinsPlayer();
             }
@@ -380,7 +380,7 @@ namespace Ex02
         {
             Screen.Clear();
             PrintMatrixConsole(io_Game);
-            if (io_Game.CurrentPlayer != Cells.Empty)
+            if (io_Game.CurrentPlayer != eCells.Empty)
             {
                 Console.WriteLine($"Well done!! {io_Game.CurrentPlayer} has won!");
             }
