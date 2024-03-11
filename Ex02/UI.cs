@@ -1,48 +1,49 @@
 ﻿using Ex02.Classes;
 using Ex02.ConsoleUtils;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Permissions;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Ex02
 {
-    public class UI
+    public static class UI
     {
         public static void Run()
         {
-            bool flagPlay = true;
-            Game game = new Game();
+            bool v_FlagPlay = true;
+
+            Game game;
             game = SetupGame();
             Screen.Clear();
             if (game.PlayerMode)
             {
                 ShowStat(game);
-                while (flagPlay)
+                while (v_FlagPlay)
                 {
                     PlayerVsPlayer(game);
                     ShowStat(game);
-                    flagPlay = ReplayUI(game);
+                    v_FlagPlay = ReplayUI(game);
                 }
             }
             else
             {
                 ShowStat(game);
-                while (flagPlay)
+                while (v_FlagPlay)
                 {
                     PlayerVsPcAI(game);
                     ShowStat(game);
-                    flagPlay = ReplayUI(game);
+                    v_FlagPlay = ReplayUI(game);
                 }
             }
+
             Console.ReadLine();
         }
+
         public static bool ReplayUI(Game io_Game)
         {
             string result;
+            bool v_FlagResult = true;
+
             Console.WriteLine("Do you want to play again? Enter Yes or No:");
             result = Console.ReadLine();
             while ("yes" != result.ToLower() && result.ToLower() != "no")
@@ -55,13 +56,10 @@ namespace Ex02
             {
                 io_Game.Replay();
                 Screen.Clear();
-                /*i_Game.m_GameOver = false;
-                i_Game.
-                Screen.Clear();
-                InitializeBoardWithSpaces();*/
-                return true;
+                return v_FlagResult;
             }
-            return false;
+
+            return !v_FlagResult;
         }
 
         public static void ShowStat(Game io_Game)
@@ -71,9 +69,10 @@ namespace Ex02
             Console.WriteLine($"points of player 1 (RED): {CurrentPlayersScore[0]}\npoints of player 2 (YELLOW): {CurrentPlayersScore[1]}");
         }
 
-        public static int GetVaildUserInputBitween4to8()
+        public static int GetVaildUserInputBetween4to8()
         {
             int userNumber;
+
             while (true)
             {
                 // Read the input as a string
@@ -82,86 +81,87 @@ namespace Ex02
                 // Try parsing the string to an integer
                 if (int.TryParse(userInput, out userNumber) && userNumber > 3 && userNumber < 9)
                 {
-                    Console.WriteLine($"You entered: {userNumber}");
-                    break; // Exit the loop if a valid positive integer is entered
+                    break; // Exit the loop if a valid positive integer between 4 to 8 is entered
                 }
                 else
                 {
-                    Console.WriteLine("Invalid input. Please enter a valid positive integer.");
+                    Console.WriteLine("Invalid input. Please enter a valid positive integer between 4 to 8.");
                 }
             }
+
             return userNumber;
         }
 
         public static int GetVaildUserModegame()
         {
             int UserNumber;
-            Console.WriteLine("Please pick who you want to compet:\npress 1 to play with another player\npress 2 to play with PC");
+
+            Console.WriteLine("Please pick who you want to compete:\npress 1 to play with another player\npress 2 to play with PC");
             while (true)
             {
-                // Read the input as a string
                 string userInput = Console.ReadLine();
 
-                // Try parsing the string to an integer
                 if (int.TryParse(userInput, out UserNumber) && UserNumber > 0 && UserNumber < 3)
                 {
-                    break; // Exit the loop if a valid positive integer is entered
+                    break; // Exit the loop if a valid positive integer between 1 to 2 is entered
                 }
                 else
                 {
                     Console.WriteLine("Invalid input. Please enter 1 or 2");
                 }
             }
+
             return UserNumber;
         }
 
         public static Game SetupGame()
         {
             int numberOfRows, numberOfColumns, userNumber;
+            const bool v_PcMode = true;
 
             Console.WriteLine("Welcome to 4 in row!");
-            // Keep prompting until a valid positive integer is entered
-            Console.Write("Please enter Number of Rows: ");
-            numberOfRows = GetVaildUserInputBitween4to8();
-            Console.Write("Please enter Number of Cols: ");
-            numberOfColumns = GetVaildUserInputBitween4to8();
+            Console.Write("Please enter Number of Rows between 4 to 8: ");
+            numberOfRows = GetVaildUserInputBetween4to8();
+            Console.Write("Please enter Number of Cols between 4 to 8: ");
+            numberOfColumns = GetVaildUserInputBetween4to8();
             userNumber = GetVaildUserModegame();
-
-            Game game = userNumber == 1 ? new Game(numberOfRows, numberOfColumns, 4, false) : new Game(numberOfRows, numberOfColumns, 4, true);
+            Game game = userNumber == 1 ? new Game(numberOfRows, numberOfColumns, 4, !v_PcMode) : new Game(numberOfRows, numberOfColumns, 4, v_PcMode);
             return game;
-
         }
 
-        public static void printMatrixConsole(Game io_Game)
+        public static void PrintMatrixConsole(Game io_Game)
         {
             StringBuilder numberOfColToPrint = new StringBuilder("  ");
             StringBuilder speaceToPrint = new StringBuilder("=");
+
             for (int i = 1; i <= io_Game.Cols; i++)
             {
                 numberOfColToPrint.Append($"{i}   ");
                 speaceToPrint.Append("====");
             }
+
             Console.WriteLine(numberOfColToPrint);
             for (int i = 0; i < io_Game.Rows; i++)
             {
                 for (int j = 0; j < io_Game.Cols; j++)
                 {
-                    //Console.Write($"| {(char)cells[i, j]} ");
                     Console.Write($"| ");
                     PrintInColor(io_Game[i, j]);
                     Console.Write($" ");
                 }
+
                 Console.WriteLine("|");
                 Console.WriteLine(speaceToPrint);
             }
         }
 
-        public static void PrintInColor(Cells color)
+        public static void PrintInColor(eCells color)
         {
             ConsoleColor lastColor = Console.ForegroundColor;
-            if (color != Cells.Empty)
+
+            if (color != eCells.Empty)
             {
-                if (color == Cells.Red)
+                if (color == eCells.Red)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                 }
@@ -169,6 +169,7 @@ namespace Ex02
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
                 }
+
                 Console.Write((char)color);
                 Console.ForegroundColor = lastColor;
             }
@@ -178,38 +179,15 @@ namespace Ex02
             }
         }
 
-        /*public static bool PlayerTurn(int numOfCol)
-        {
-            numOfCol--;
-            if (!ValidCol(numOfCol) || !CanPlay(numOfCol))
-            {
-                //throw new InvalidOperationException();
-                Console.WriteLine("Invalid Input");
-                return false;
-            }
-
-
-            m_Cells[m_Counts[numOfCol], numOfCol] = m_CurrentPlayer;
-            m_Counts[numOfCol]--;
-
-            CheckWinCondition();
-
-            if (!IsGameOver)
-            {
-                ChangePlayerTurn();
-            }
-            return true;
-        }*/
-
         public static void PlayerVsPlayer(Game io_Game)
         {
             int token;
             bool validInput;
             string userInput;
+
             while (!io_Game.IsGameOver)
             {
-                //this.printMatrix();
-                printMatrixConsole(io_Game);
+                PrintMatrixConsole(io_Game);
                 validInput = false;
                 while (!validInput)
                 {
@@ -218,7 +196,6 @@ namespace Ex02
                     Console.WriteLine($"{playerColor} turn,");
                     Console.Write("Enter your column to put token: ");
                     userInput = Console.ReadLine();
-
                     if (userInput.ToUpper() == "Q")
                     {
                         io_Game.IsGameOver = true;
@@ -239,8 +216,8 @@ namespace Ex02
                             {
                                 Console.WriteLine($"Invalid Input column is full, please insert to a diffrent column");
                             }
-                            Thread.Sleep(1500);
 
+                            Thread.Sleep(1500);
                         }
                         else
                         {
@@ -249,7 +226,6 @@ namespace Ex02
                             {
                                 PrintGameIsfinished(io_Game);
                             }
-                            
                         }  
                     }
                     else
@@ -258,6 +234,7 @@ namespace Ex02
                     }
                 }
             }
+
             IncreaseNumOfWins(io_Game);
         }
 
@@ -269,7 +246,7 @@ namespace Ex02
             string userInput;
             while (!io_Game.IsGameOver)
             {
-                printMatrixConsole(io_Game);
+                PrintMatrixConsole(io_Game);
                 validInput = false;
                 while (!validInput)
                 {
@@ -278,7 +255,7 @@ namespace Ex02
                     if (userInput.ToUpper() == "Q")
                     {
                         io_Game.IsGameOver = true;
-                        io_Game.CurrentPlayer = io_Game.CurrentPlayer == Cells.Red ? Cells.Yellow : Cells.Red;
+                        io_Game.CurrentPlayer = io_Game.CurrentPlayer == eCells.Red ? eCells.Yellow : eCells.Red;
                         break;
                     }
 
@@ -329,13 +306,13 @@ namespace Ex02
 
         public static void PlayerVsPcAI(Game io_Game)
         {
-            Random rnd = new Random();
             int token;
             bool validInput;
             string userInput;
+
             while (!io_Game.IsGameOver)
             {
-                printMatrixConsole(io_Game);
+                PrintMatrixConsole(io_Game);
                 validInput = false;
                 while (!validInput)
                 {
@@ -344,7 +321,7 @@ namespace Ex02
                     if (userInput.ToUpper() == "Q")
                     {
                         io_Game.IsGameOver = true;
-                        io_Game.CurrentPlayer = io_Game.CurrentPlayer == Cells.Red ? Cells.Yellow : Cells.Red;
+                        io_Game.CurrentPlayer = io_Game.CurrentPlayer == eCells.Red ? eCells.Yellow : eCells.Red;
                         break;
                     }
 
@@ -375,10 +352,6 @@ namespace Ex02
                             {
                                 PrintGameIsfinished(io_Game);
                             }
-                            /*else
-                            {
-                                //printMatrixConsole(io_Game);
-                            }*/
                         }
                     }
                     else
@@ -393,11 +366,11 @@ namespace Ex02
 
         public static void IncreaseNumOfWins(Game io_Game)
         {
-            if (io_Game.CurrentPlayer == Cells.Red)
+            if (io_Game.CurrentPlayer == eCells.Red)
             {
                 io_Game.Player1.IncreaseWinsPlayer();
             }
-            else if (io_Game.CurrentPlayer == Cells.Yellow)
+            else if (io_Game.CurrentPlayer == eCells.Yellow)
             {
                 io_Game.Player2.IncreaseWinsPlayer();
             }
@@ -406,8 +379,8 @@ namespace Ex02
         public static void PrintGameIsfinished(Game io_Game)
         {
             Screen.Clear();
-            printMatrixConsole(io_Game);
-            if (io_Game.CurrentPlayer != Cells.Empty)
+            PrintMatrixConsole(io_Game);
+            if (io_Game.CurrentPlayer != eCells.Empty)
             {
                 Console.WriteLine($"Well done!! {io_Game.CurrentPlayer} has won!");
             }

@@ -2,21 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 
-
 namespace Ex02.Classes
 {
     public class Game
     {
         Player m_Player1;
         Player m_Player2;
-        Cells[,] m_Cells;
-        Cells m_CurrentPlayer;
-        int[] m_Counts;
+        eCells[,] m_Cells;
+        eCells m_CurrentPlayer;
+        int[] m_ColumnFullnessCounterArray;
         int m_KInARow;
-        public int KInARow { get { return m_KInARow; } private set { m_KInARow = value; } }
+        int KInARow { get { return m_KInARow; } set { m_KInARow = value; } }
         bool m_ModePcGame;
         bool m_GameOver = false;
-
 
         public Game() : this(8, 8, 4, false)
         {
@@ -24,13 +22,13 @@ namespace Ex02.Classes
 
         public Game(int rows, int cols, int K, bool modePcGame)
         {
-            m_Cells = new Cells[rows, cols];
-            m_CurrentPlayer = Cells.Red;
-            m_Counts = new int[cols];
+            m_Cells = new eCells[rows, cols];
+            m_CurrentPlayer = eCells.Red;
+            m_ColumnFullnessCounterArray = new int[cols];
             m_KInARow = K;
             m_ModePcGame = modePcGame;
-            m_Player1 = new Player(Cells.Red);
-            m_Player2 = new Player(Cells.Yellow);
+            m_Player1 = new Player(eCells.Red);
+            m_Player2 = new Player(eCells.Yellow);
             initializeGameBoard();
         }
 
@@ -40,16 +38,16 @@ namespace Ex02.Classes
             {
                 for (int j = 0; j < Cols; j++)
                 {
-                    m_Cells[i, j] = Cells.Empty;
+                    m_Cells[i, j] = eCells.Empty;
                 }
             }
 
             for (int i = 0; i < Cols; i++)
             {
-                m_Counts[i] = Rows - 1;
+                m_ColumnFullnessCounterArray[i] = Rows - 1;
             }
 
-            m_CurrentPlayer = Cells.Red;
+            m_CurrentPlayer = eCells.Red;
             m_GameOver = false;
         }
 
@@ -63,7 +61,7 @@ namespace Ex02.Classes
             get { return m_Player2; }
         }
         
-        public Cells this[int row, int col]
+        public eCells this[int row, int col]
         {
             get { return m_Cells[row, col]; }
             set { m_Cells[row, col] = value; }
@@ -71,10 +69,7 @@ namespace Ex02.Classes
 
         public int Rows
         {
-            get
-            {
-                return m_Cells.GetLength(0);
-            }
+            get { return m_Cells.GetLength(0); }
         }
 
         public int Cols
@@ -82,7 +77,8 @@ namespace Ex02.Classes
             get { return m_Cells.GetLength(1); }
         }
 
-        public Cells CurrentPlayer {
+        public eCells CurrentPlayer 
+        {
             get { return m_CurrentPlayer; }
             set { m_CurrentPlayer = value; }
         }
@@ -90,13 +86,14 @@ namespace Ex02.Classes
         public bool PlayerMode { get { return !m_ModePcGame; } }
 
         public bool IsGameOver
-        { get { return m_GameOver; }
-          set { m_GameOver = value; }
+        { 
+            get { return m_GameOver; }
+            set { m_GameOver = value; }
         }
 
         public void ChangePlayerTurn()
         {
-            CurrentPlayer = CurrentPlayer == Cells.Red ? Cells.Yellow : Cells.Red;
+            CurrentPlayer = CurrentPlayer == eCells.Red ? eCells.Yellow : eCells.Red;
         }
 
         public bool ValidCol(int i_UserInput)
@@ -106,7 +103,7 @@ namespace Ex02.Classes
 
         public bool IsValidPlay(int i_ColIndex)
         {
-            return !IsGameOver && m_Counts[i_ColIndex] >= 0;
+            return !IsGameOver && m_ColumnFullnessCounterArray[i_ColIndex] >= 0;
         }
 
         private bool isInBoardLimits(int i_NextRow, int i_NextCol)
@@ -114,37 +111,212 @@ namespace Ex02.Classes
             return i_NextRow >= 0 && i_NextRow < Rows && i_NextCol >= 0 && i_NextCol < Cols;
         }
 
-        private bool thereIsKInLine(int i_Row, int i_Col, int I_Diraction)
+        private bool thereIsKInLine(int i_Row, int i_Col, int i_Diraction)
         {
             int[] diractionRow = { 0, 1, 1, 1 };
             int[] diractionCol = { 1, 1, 0, -1 };
+            bool v_FlagResult = true;
 
             for (int k = 1; k < KInARow; k++)
             {
-                int nextR = i_Row + diractionRow[I_Diraction] * k;
-                int nextC = i_Col + diractionCol[I_Diraction] * k;
+                int nextR = i_Row + diractionRow[i_Diraction] * k;
+                int nextC = i_Col + diractionCol[i_Diraction] * k;
+
                 if (!isInBoardLimits(nextR, nextC) || this[nextR, nextC] != this[i_Row, i_Col])
                 {
-                    return false;
+                    v_FlagResult = !v_FlagResult;
+                    break;
                 }
             }
 
-            return true;
+            return v_FlagResult;
+        }
+
+        private bool thereIs2InLineAndPotentialTofillMore(int i_Row, int i_Col, int i_Diraction, out int o_expcetedValCol)
+        {
+            int[] diractionRow = { 0, 1, 1, 1 };
+            int[] diractionCol = { 1, 1, 0, -1 };
+            int   backRow = i_Row - diractionRow[i_Diraction],
+                  backColumn = i_Col - diractionCol[i_Diraction],
+                  nextRow = i_Row + diractionRow[i_Diraction],
+                  nextColumn = i_Col + diractionCol[i_Diraction],
+                  nextNextRow = nextRow + diractionRow[i_Diraction],
+                  nextNextColumn = nextColumn + diractionCol[i_Diraction];
+            bool  backCell = isInBoardLimits(backRow, backColumn) && this[backRow, backColumn] == eCells.Empty;
+            bool  forwardCell = isInBoardLimits(nextRow, nextColumn) && this[nextRow, nextColumn] == this[i_Row, i_Col];
+            bool  positionThreeInRow = isInBoardLimits(nextNextRow, nextNextColumn) && this[nextNextRow, nextNextColumn] == eCells.Empty;
+            bool  v_FlagResult = true;
+
+            if (!(backCell && forwardCell))
+            {
+                o_expcetedValCol = -1;
+                return false;
+            }
+
+            if (positionThreeInRow && m_ColumnFullnessCounterArray[nextNextColumn] == nextNextRow)
+            {
+                o_expcetedValCol = nextNextColumn;
+                return v_FlagResult;
+            }
+            else if (backCell && m_ColumnFullnessCounterArray[backColumn] == backRow)
+            {
+                o_expcetedValCol = backColumn;
+                return v_FlagResult;
+            }
+           
+            o_expcetedValCol = -1;
+            return !v_FlagResult;
         }
 
         private void checkWinCondition()
         {
+            bool v_flag = true;
+
             for (int i = 0; i < Rows; i++)
             {
                 for (int j = 0; j < Cols; j++)
                 {
-                    if (this[i, j] != Cells.Empty)
+                    if (this[i, j] != eCells.Empty)
                     {
                         for (int d = 0; d < 4; d++)
                         {
                             if (thereIsKInLine(i, j, d))
                             {
-                                m_GameOver = true;
+                                m_GameOver = v_flag;
+                                break;
+                            }
+                        }
+
+                        if (IsGameOver)
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                if (IsGameOver)
+                {
+                    break;
+                }
+            }
+
+            if (m_ColumnFullnessCounterArray.All(c => c == -1))
+            {
+                if (!m_GameOver)
+                {
+                    m_GameOver = v_flag;
+                    m_CurrentPlayer = eCells.Empty;
+                }
+            }
+        }
+
+        public bool TokenInsertion(int i_NumOfCol)
+        {
+            bool v_FlagResult = true;
+
+            i_NumOfCol--;
+            if (!ValidCol(i_NumOfCol) || !IsValidPlay(i_NumOfCol))
+            {
+                return !v_FlagResult;
+            }
+
+            this[m_ColumnFullnessCounterArray[i_NumOfCol], i_NumOfCol] = CurrentPlayer;
+            m_ColumnFullnessCounterArray[i_NumOfCol]--;
+            checkWinCondition();
+            if (!IsGameOver)
+            {
+                ChangePlayerTurn();
+            }
+
+            return v_FlagResult;
+        }
+
+        public int[] CurrentPlayersScore()
+        {
+            return new int[2] { Player1.NumOfWins, Player2.NumOfWins };
+        }
+
+        public void PlaySmartPC()
+        {
+            int bestColumn = findBestColumn();
+
+            TokenInsertion(bestColumn);
+        }
+
+        private int findBestColumn()
+        {
+            int bestAvailableColumn;
+
+            // Iterate through each column and find the first one that allows a winning move
+            bestAvailableColumn = scanBoardToWinOrBlock();
+            if (bestAvailableColumn != 0)
+            {
+                return bestAvailableColumn;
+            }
+            else
+            {
+                ChangePlayerTurn();
+                bestAvailableColumn = scanBoardToWinOrBlock();
+                if(bestAvailableColumn != 0) 
+                {
+                    ChangePlayerTurn();
+
+                    return bestAvailableColumn; 
+                }
+
+                ChangePlayerTurn();
+            }
+
+            if (isBlockMoveForThreeInRow(out bestAvailableColumn))
+            {
+                return bestAvailableColumn + 1;
+            }
+
+            // If no winning or blocking move is found, choose a random available column
+            List<int> availableColumns = Enumerable.Range(1, Cols).Where(col => IsValidPlay(col - 1)).ToList();
+            Random rnd = new Random();
+
+            return availableColumns[rnd.Next(availableColumns.Count)];
+        }
+
+        private int scanBoardToWinOrBlock()
+        {
+            int resultColumn = 0;
+
+            for (int col = 0; col < Cols; col++)
+            {
+                if (IsValidPlay(col))
+                {
+                    m_Cells[m_ColumnFullnessCounterArray[col], col] = m_CurrentPlayer; // Simulate placing a token in the current column
+                    if (isWinningMove()) // Check if this move leads to a win
+                    {
+                        this[m_ColumnFullnessCounterArray[col], col] = eCells.Empty; // Undo the simulated move
+                        resultColumn = col + 1; // Columns are 1-indexed
+                        break;
+                    }
+
+                    m_Cells[m_ColumnFullnessCounterArray[col], col] = eCells.Empty; // Undo the simulated move
+                }
+            }
+
+            return resultColumn;
+        }
+
+        private bool isWinningMove()
+        {
+            bool v_FlagResult = false;
+
+            for (int i = 0; i < Rows; i++) 
+            {
+                for (int j = 0; j < Cols; j++)
+                {
+                    if (this[i, j] != eCells.Empty)
+                    {
+                        for (int d = 0; d < 4; d++) // Check for a win in all directions
+                        {
+                            if (thereIsKInLine(i, j, d))
+                            {
+                                v_FlagResult = !v_FlagResult;
                                 break;
                             }
                         }
@@ -152,150 +324,52 @@ namespace Ex02.Classes
                 }
             }
 
-            if (m_Counts.All(c => c == -1))
-            {
-                if (!m_GameOver)
-                {
-                    m_GameOver = true;
-                    m_CurrentPlayer = Cells.Empty;
-                    
-                }
-            }
+            return v_FlagResult;
         }
 
-        public bool TokenInsertion(int i_NumOfCol)
+        private bool isBlockMoveForThreeInRow(out int o_expcetedValCol)
         {
-            i_NumOfCol--;
-            if (!ValidCol(i_NumOfCol) || !IsValidPlay(i_NumOfCol))
-            {
-                return false;
-            }
+            bool v_FlagResult = false;
 
-            this[m_Counts[i_NumOfCol], i_NumOfCol] = CurrentPlayer;
-            m_Counts[i_NumOfCol]--;
-
-            checkWinCondition();
-
-            if (!IsGameOver)
-            {
-                ChangePlayerTurn();
-            }
-            return true;
-        }
-
-        public int[] CurrentPlayersScore()
-        {
-            int[] gameScore = new int[2] { Player1.NumOfWins, Player2.NumOfWins };
-            return gameScore;
-        }
-
-        public void PlaySmartPC()
-        {
-            int bestColumn = findBestColumn();
-            TokenInsertion(bestColumn);
-        }
-
-        private int findBestColumn()
-        {
-            int best;
-            // Iterate through each column and find the first one that allows a winning move
-           /* for (int col = 0; col < Cols; col++)
-            {
-                if (IsValidPlay(col))
-                {
-                    // Simulate placing a token in the current column
-                    m_Cells[m_Counts[col], col] = m_CurrentPlayer;
-
-                    // Check if this move leads to a win
-                    if (isWinningMove())
-                    {
-                        // Undo the simulated move
-                        this[m_Counts[col], col] = Cells.Empty;
-                        return col + 1; // Columns are 1-indexed
-                    }
-
-                    // Undo the simulated move
-                    m_Cells[m_Counts[col], col] = Cells.Empty;
-                }
-            }*/
-            best = scanBoardToWinOrBlock();
-            if (best != 0)
-            {
-                return best;
-            }
-            else
-            {
-                ChangePlayerTurn();
-                best = scanBoardToWinOrBlock();
-                if(best != 0) 
-                {
-                    ChangePlayerTurn();
-                    return best; 
-                }
-                ChangePlayerTurn();
-
-            }
-
-            // If no winning move is found, choose a random available column
-            List<int> availableColumns = Enumerable.Range(1, Cols).Where(col => IsValidPlay(col - 1)).ToList();
-            Random rnd = new Random();
-            return availableColumns[rnd.Next(availableColumns.Count)];
-        }
-
-        private int scanBoardToWinOrBlock()
-        {
-            for (int col = 0; col < Cols; col++)
-            {
-                if (IsValidPlay(col))
-                {
-                    // Simulate placing a token in the current column
-                    m_Cells[m_Counts[col], col] = m_CurrentPlayer;
-
-                    // Check if this move leads to a win
-                    if (isWinningMove())
-                    {
-                        // Undo the simulated move
-                        this[m_Counts[col], col] = Cells.Empty;
-                        return col + 1; // Columns are 1-indexed
-                    }
-
-                    // Undo the simulated move
-                    m_Cells[m_Counts[col], col] = Cells.Empty;
-                }
-            }
-            return 0;
-        }
-
-        private bool isWinningMove()
-        {
-            // Check for a win in all directions
+            o_expcetedValCol = -1;
             for (int i = 0; i < Rows; i++)
             {
                 for (int j = 0; j < Cols; j++)
                 {
-                    if (this[i, j] != Cells.Empty)
+                    if (this[i, j] != eCells.Empty)
                     {
-                        for (int d = 0; d < 4; d++)
+                        for (int d = 0; d < 4; d++) // Check for a win in all directions
                         {
-                            if (thereIsKInLine(i, j, d))
+                            if (thereIs2InLineAndPotentialTofillMore(i, j, d, out o_expcetedValCol) )
                             {
-                                return true;
+                                v_FlagResult = !v_FlagResult;
+                                break;
                             }
+                        }
+
+                        if (v_FlagResult)
+                        {
+                            break;
                         }
                     }
                 }
+
+                if (v_FlagResult)
+                {
+                    break;
+                }
             }
 
-            return false;
+            return v_FlagResult;
         }
 
         public void Replay()
         {          
             initializeGameBoard();
-        }
-        
+        }   
     }
-    public enum Cells
+
+    public enum eCells
     {
         Empty = ' ',
         Red = 'X',
