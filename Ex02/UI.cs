@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace Ex02
 {
-    public class UI
+    public static class UI
     {
         public static void Run()
         {
